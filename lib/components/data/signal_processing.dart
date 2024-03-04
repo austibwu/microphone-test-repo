@@ -56,7 +56,6 @@ void updateCurrentView(SpectrumData curr) {
   spectrumIsLoaded.value = false;
   currentView.value = curr;
   spectrumInfo.update(curr);
-  spectrumIsLoaded.value = true;
   
 }
 
@@ -194,6 +193,7 @@ List<FlSpot> getDataPoints(Float64List curr) {
     dataPoints
         .add(FlSpot((i * 20000 / curr.length), log10(curr[i].toDouble())));
   }
+  spectrumIsLoaded.value = true;
   return dataPoints;
 }
 

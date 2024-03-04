@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:audiotestproject/components/data/signal_processing.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -89,13 +90,14 @@ List<Widget> createListTilesFromSaved() {
             icon: const Icon(Icons.delete), onPressed: () => delete(curr)),
         onTap: () {
           // TODO: implement functions to update the spectrumRender() graph.
-          // currentView.value = curr;
+          updateCurrentView(curr);
         },
       ),
     );
   }
-  if(listTiles.isEmpty) {
-    listTiles.add(const ListTile(title: Text('No saved signals')));
+  if (listTiles.isEmpty) {
+    listTiles.add(ListTile(title: Text('No saved signals'),
+    trailing: TextButton(onPressed: () => createListTilesFromSaved(), child: Text('refresh')),));
   }
   return listTiles;
 }
