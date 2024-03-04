@@ -21,7 +21,7 @@ class PlayButtonState extends State<PlayButton> {
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         IconButton(
           onPressed: () async {
-            if (waveMaker.player.state == PlayerState.playing) {
+            if (outputWave.player.state == PlayerState.playing) {
               return;
             }
             await makeWAV();

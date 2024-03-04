@@ -53,7 +53,7 @@ class _FrequencyControlsState extends State<FrequencyControls> {
                     if (freq == '') {
                       return;
                     }
-                    waveMaker.fNought = int.parse(freq);
+                    outputWave.fNought = int.parse(freq);
                   },
                 ),
               ),
@@ -90,7 +90,7 @@ class _FrequencyControlsState extends State<FrequencyControls> {
                           if (freq == '') {
                             return;
                           }
-                          waveMaker.fEnd = int.parse(freq);
+                          outputWave.fEnd = int.parse(freq);
                         },
                       ),
                     ),
@@ -126,7 +126,7 @@ class _FrequencyControlsState extends State<FrequencyControls> {
                   style: (checked)
                       ? TextStyle(color: Color.fromARGB(255, 54, 136, 71))
                       : null),
-              Text(waveMaker.steps.toString(),
+              Text(outputWave.steps.toString(),
                   style: (checked)
                       ? TextStyle(color: Color.fromARGB(255, 54, 136, 71))
                       : null),
@@ -189,9 +189,9 @@ class _SignalControlsState extends State<SignalControls> {
                           onChanged: (selection) {
                             setState(() {
                               defaultSignal = selection ?? SignalType.tone;
-                              waveMaker.audioType =
+                              outputWave.audioType =
                                   selection?.place ?? 0; // TODO: will fix later
-                              waveMaker.isSweep = selection == SignalType.sweep;
+                              outputWave.isSweep = selection == SignalType.sweep;
                             });
                           },
                         ),
@@ -224,7 +224,7 @@ class _SignalControlsState extends State<SignalControls> {
                         onChanged: (s) {
                           setState(() {
                             defaultDepth = s ?? BitDepth.depth16Bit;
-                            waveMaker.bitDepth = s ?? BitDepth.depth8Bit;
+                            outputWave.bitDepth = s ?? BitDepth.depth8Bit;
                           });
                         },
                       ),
@@ -258,14 +258,14 @@ class _VolumeSliderState extends State<VolumeSlider> {
       children: [
         Icon(Icons.volume_up, color: const Color.fromARGB(255, 39, 39, 39)),
         Slider(
-          value: waveMaker.volume,
-          label: waveMaker.volume.toString(),
+          value: outputWave.volume,
+          label: outputWave.volume.toString(),
           onChanged: (volume) {
             FlutterVolumeController.setMute(
                 false); // disables mute if 'mute' is enabled on system
             FlutterVolumeController.setVolume(
                 volume); // keeps in sync to device volume
-            waveMaker.volume = volume;
+            outputWave.volume = volume;
             setState(() => {});
           },
         ),
@@ -338,7 +338,7 @@ class DurationSliderState extends State<DurationSlider> {
                   height: .6,
                   // color: Colors.black,
                 ),
-                waveMaker.duration.toInt().toString(),
+                outputWave.duration.toInt().toString(),
                 // style: TextStyle(color: Colors.black),
               ),
             ),
@@ -370,14 +370,14 @@ class DurationSliderState extends State<DurationSlider> {
                       children: [
                         Text('1'),
                         Slider(
-                          value: waveMaker.duration,
+                          value: outputWave.duration,
                           min: 1,
                           max: 6,
                           divisions: 5,
                           // label: x.duration.toInt().toString(),
                           onChanged: (duration) => setState(() {
-                            waveMaker.duration = duration;
-                            print(waveMaker.duration);
+                            outputWave.duration = duration;
+                            print(outputWave.duration);
                           }),
                           onChangeEnd: (o) {
                             Timer(Duration(milliseconds: 60), () {

@@ -32,6 +32,8 @@ Future<void> readWAV(String recordedPath) async {
   // spectrumController.fourierOutput = runFourier(samples);
   print(currentView.value.fourierResponse.length);
   currentView.value.fourierResponse = runFourier(samples);
+  rawBytes = [];
+  samples.clear();
   // currentView.value = SpectrumData(x.fNought, x.fEnd,x.steps, x.isSweep, x.bitDepth, x.duration, runFourier(samples));
   // fftc.fourierSpots = getDataPoints(fftc.fourierOutput);
   spectrumIsLoaded.value = true;
@@ -50,6 +52,14 @@ List<double> parseBytes(List<int> curr, List<double> samples) {
   return samples;
 }
 
+void updateCurrentView(SpectrumData curr) {
+  spectrumIsLoaded.value = false;
+  currentView.value = curr;
+  spectrumInfo.update(curr);
+  spectrumIsLoaded.value = true;
+  
+}
+
 /// runs real valued fast fourier transform on given set of time domain signals
 /// strips complex data and returns frequency domain magnitudes (FS^2/Hz).
 /// also stores the index of the target frequency in the spectrum for later use.
@@ -57,10 +67,8 @@ Float64List runFourier(List<double> samples) {
   final fft = FFT(samples.length);
   print(FFT(samples.length).size);
   Float64List output = fft.realFft(samples).discardConjugates().magnitudes();
-  // spectrumController.targetIndex = fft.indexOfFrequency(
-  //     x.fNought.toDouble(), 44100); // store index(double) of the target freq
   spectrumInfo.targetIndex = fft.indexOfFrequency(
-      waveMaker.fNought.toDouble(), 44100);
+      outputWave.fNought.toDouble(), 44100);
   // print('length of magnitues spectrum: ${output.length}'); // debugging
   // print('index of 0hz: ${fft.indexOfFrequency(0, 44100)}');
   // print('index of 1hz: ${fft.indexOfFrequency(1, 44100)}');
@@ -74,19 +82,21 @@ Float64List runFourier(List<double> samples) {
   return output.sublist(0, upperRange.toInt());
 }
 
+// useless?
 void runCalculations() {
   Float64List spectrum = currentView.value.fourierResponse;
-  calculateSNR(spectrum);
-  calculateTHD(spectrum);
-  calculateSFDR(spectrum);
+  var snrOutput = calculateSNR(spectrum);
+  var thdOutput = calculateTHD(spectrum);
+  var sfdrOutput = calculateSFDR(spectrum);
+
 }
 
 /// calculate signal to noise ratio. returns String
 /// for current simplicity's sake.
-String calculateSNR(Float64List spectrum) {
+(double, double, double) calculateSNR(Float64List spectrum) {
   // Float64List spectrum = fftc.fourierOutput;
   if (spectrum.isEmpty) {
-    return 'none yet.';
+    return (0,0,0);
   }
 
   double sumSignalPower = sumPowerAt(spectrumInfo.targetIndex, spectrum);
@@ -96,15 +106,17 @@ String calculateSNR(Float64List spectrum) {
   double signal = sumSignalPower / 6;
 
   double snr = 10 * log10(signal / noise);
-  return 'SNR for ${waveMaker.fNought}Hz = ${truncate(snr)}';
+  return (snr, signal, noise);
+  // return 'SNR for ${outputWave.fNought}Hz = ${truncate(snr)}';
 }
 
 /// Total Harmonic Distortion: calculated as the ratio of the powers
 /// of integer multiples of the fundamental frequency (harmonics, also
 /// called spurs) to the power of the fundamental frequency itself.
-String calculateTHD(Float64List spectrum) {
+/// should account for odd harmonics only.
+(double, double, double) calculateTHD(Float64List spectrum) {
     if (spectrum.isEmpty) {
-    return '';
+    return (0,0,0);
   }
   double sumSpursPowers = 0;
   for (var i = 2; i < 5; i++) {
@@ -112,16 +124,17 @@ String calculateTHD(Float64List spectrum) {
   }
   double sumSignalPower = sumPowerAt(spectrumInfo.targetIndex, spectrum);
   double THD = sumSpursPowers / sumSignalPower * 100;
-  return 'THD = ${truncate(THD)}%. calculated by comparing the power at ${freqFromIndex(spectrumInfo.targetIndex)}Hz and the first 5 harmonics.';
+  return (THD, sumSpursPowers, sumSignalPower);
+  // return 'THD = ${truncate(THD)}%. calculated by comparing the power at ${freqFromIndex(spectrumInfo.targetIndex)}Hz and the first 5 harmonics.';
 }
 
 /// Spurious-Free Dynamic Range: the strength ratio between the
 /// fundamental frequency and the next highest peak (not
 /// necessarilly a spur or harmonic.). Calculated in dBFS.
 /// should it be a harmonic?
-String calculateSFDR(Float64List spectrum) {
+(double, double, double) calculateSFDR(Float64List spectrum) {
   if (spectrum.isEmpty) {
-    return '';
+    return (0,0,0);
   }
   int peakL = spectrumInfo.targetIndex.floor();
   int peakR = spectrumInfo.targetIndex.ceil();
@@ -139,7 +152,8 @@ String calculateSFDR(Float64List spectrum) {
   }
   double spurMagnitude = log10(spectrum[spurIndex]);
   double SFDR = peakFundamental - spurMagnitude;
-  return 'Spurious-Free Dynamic Range = ${truncate(SFDR)}dB. Fundamental at ${freqFromIndex(spectrumInfo.targetIndex)}Hz and spur at ${freqFromIndex(spurIndex)}Hz.';
+  return (SFDR, peakFundamental, spurMagnitude);
+  // return 'Spurious-Free Dynamic Range = ${truncate(SFDR)}dB. Fundamental at ${freqFromIndex(spectrumInfo.targetIndex)}Hz and spur at ${freqFromIndex(spurIndex)}Hz.';
 }
 
 /// returns the power of the spread peak at the given index of the spectrum,
@@ -200,6 +214,7 @@ int indexFromFreq(num freq) {
   return index;
 }
 
+/// base 10 log function
 double log10(double x) {
   return log(x) / log(10);
 }

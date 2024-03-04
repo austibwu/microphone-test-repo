@@ -106,7 +106,7 @@ class SignalRender extends StatefulWidget {
 }
 
 class _SignalRenderState extends State<SignalRender> {
-  final double maxX = waveMaker.duration * 48000;
+  final double maxX = outputWave.duration * 48000;
 
   @override
   Widget build(BuildContext context) {

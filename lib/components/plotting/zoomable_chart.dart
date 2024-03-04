@@ -37,8 +37,6 @@ class _ZoomableChartState extends State<ZoomableChart> {
   late double chartW;
   late Offset position;
   late double currPosition;
-  // GlobalKey globalKey = GlobalKey();
-  // late var c;
 
   @override
   void initState() {
@@ -49,9 +47,7 @@ class _ZoomableChartState extends State<ZoomableChart> {
       renderBox = context.findRenderObject() as RenderBox;
       chartW = renderBox.size.width;
       position = renderBox.localToGlobal(Offset.zero);
-      // Use the size and position as needed
     });
-    // touchpadScroll = widget.touchpadScroll;
   }
 
   @override
@@ -64,9 +60,9 @@ class _ZoomableChartState extends State<ZoomableChart> {
             maxX = widget.maxX;
           } else {
             renderBox = context.findRenderObject() as RenderBox;
-            chartW = renderBox.size.width - 65;
+            chartW = renderBox.size.width - 65; // <-- you will need to figure out the offset from the edge of this widget to actual graph.
             position = renderBox.localToGlobal(Offset.zero);
-            currPosition = details.localPosition.dx - 65;
+            currPosition = details.localPosition.dx - 65; // <-----
             double currPositionX = (currPosition / chartW)*(maxX - minX) + minX;
             minX = currPositionX - 50;
             maxX = currPositionX + 50;
@@ -104,17 +100,14 @@ class _ZoomableChartState extends State<ZoomableChart> {
       onScaleStart: (details) {
         lastMinXValue = minX;
         lastMaxXValue = maxX;
-        // details
+
         renderBox = context.findRenderObject() as RenderBox;
-        chartW = renderBox.size.width;
+        chartW = renderBox.size.width - 65;          // <-- you will need to figure out the offset from the edge of this widget to actual graph.
         position = renderBox.localToGlobal(Offset.zero);
-        currPosition = details.localFocalPoint.dx - 65;
+        currPosition = details.localFocalPoint.dx - 65;  // <-----
       },
       onScaleUpdate: (details) {
-        // print('global focal point: ${details.focalPoint.dx}');
-        // print('local focal point: $currPosition');
-        // currPosition = details.focalPoint.dx;
-        double leftUpdateFactor = currPosition / (chartW - 65);
+        double leftUpdateFactor = currPosition / chartW;
         double rightUpdateFactor = 1 - leftUpdateFactor;
         var horizontalScale = details.horizontalScale;
         if (horizontalScale == 0) return;
@@ -148,7 +141,7 @@ class _ZoomableChartState extends State<ZoomableChart> {
       // onTapDown: (details) {
       // print(details);
       // print(chartW);
-      // print('local clicked position: ${details.localPosition}');
+      // print('local clicked position: ${details.localPosition.dx}');
       // },
       // onTapCancel: () {
       //   print('tap canceled');

@@ -52,7 +52,8 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
           Container(
             color: Color.fromRGBO(103, 186, 124, 1),
             height: 120,
-            child: ListView( // TODO: re implement. bad UI
+            child: ListView(
+              // TODO: re implement. bad UI
               scrollDirection: Axis.horizontal,
               physics: ClampingScrollPhysics(),
 
@@ -70,27 +71,29 @@ class _MainAppState extends State<MainApp> with SingleTickerProviderStateMixin {
             ),
           ),
           ChangeNotifierProvider(
-            create: (context) => ChartProvider,
+            create: (context) => currentView,
             child: Row(
               // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ValueListenableBuilder(
                     valueListenable: currentView,
-                    builder: (BuildContext context, currentView, Widget? child) {
+                    builder:
+                        (BuildContext context, currentView, Widget? child) {
                       print('rebuilt');
                       return Container(
-                        width:MediaQuery.of(context).size.width - 300,
-                        alignment: Alignment.topRight,
-                        child: spectrumIsLoaded.value
-                          ? SpectrumRender()
-                          : Padding(padding: EdgeInsets.all(0)));
+                          width: MediaQuery.of(context).size.width - 300,
+                          alignment: Alignment.topRight,
+                          child: spectrumIsLoaded.value
+                              ? SpectrumRender()
+                              : Padding(padding: EdgeInsets.all(0)));
                     }),
-                ValueListenableBuilder(
-                    valueListenable: currentView,
-                    builder: (context, currentView, snapshot) {
-                      return SideBar();
-                    }),
+                // ValueListenableBuilder(
+                //     valueListenable: currentView,
+                //     builder: (context, currentView, snapshot) {
+                //       return SideBar();
+                //     }),
+                SideBar(),
               ],
             ),
           )

@@ -32,7 +32,7 @@ class _SideBarState extends State<SideBar> {
               ListTile(
                   selectedColor: Color.fromARGB(255, 124, 207, 160),
                   subtitle: Text(
-                      'Summary: generating ${waveMaker.fNought}Hz tone of ${waveMaker.bitDepth} bitdepth at ${waveMaker.duration} seconds long.')),
+                      'Summary: generating ${outputWave.fNought}Hz tone of ${outputWave.bitDepth} bitdepth at ${outputWave.duration} seconds long.')),
             ]),
             ListenableBuilder(
                 listenable: spectrumIsLoaded,
@@ -47,17 +47,17 @@ class _SideBarState extends State<SideBar> {
                               ListTile(
                                   subtitle: Text(spectrumIsLoaded.value
                                       ? calculateSNR(
-                                          currentView.value.fourierResponse)
+                                          currentView.value.fourierResponse).toString()
                                       : '')),
                               ListTile(
                                   subtitle: Text(spectrumIsLoaded.value
                                       ? calculateSFDR(
-                                          currentView.value.fourierResponse)
+                                          currentView.value.fourierResponse).toString()
                                       : '')),
                               ListTile(
                                   subtitle: Text(spectrumIsLoaded.value
                                       ? calculateTHD(
-                                          currentView.value.fourierResponse)
+                                          currentView.value.fourierResponse).toString()
                                       : '')),
                             ]),
                       ),
@@ -104,6 +104,7 @@ class GraphControlsWidget extends StatefulWidget {
 
 class _GraphControlsWidgetState extends State<GraphControlsWidget> {
   bool linetouch = true;
+  bool showMarkers = false;
 
   @override
   void initState() {
@@ -124,13 +125,30 @@ class _GraphControlsWidgetState extends State<GraphControlsWidget> {
                 ChartProvider.switchLineTouch();
                 // print(clicked);
                 setState(() {
-                  print(linetouch);
+                  // print(linetouch);
                   linetouch = clicked!;
-                  print(linetouch);
+                  // print(linetouch);
                 });
               },
             ),
-            Text('Turn off hover'),
+            Text('hover enabled'),
+          ],
+        ),
+        Row(
+          children: [
+            Checkbox(
+              value: showMarkers,
+              onChanged: (clicked) {
+                ChartProvider.showMarkers();
+                // print(clicked);
+                setState(() {
+                  print(showMarkers);
+                  showMarkers = clicked!;
+                  // print(showMarkers);
+                });
+              },
+            ),
+            Text('show harmonic markers'),
           ],
         ),
         TextButton(

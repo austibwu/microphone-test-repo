@@ -11,30 +11,32 @@ import 'package:record/record.dart';
 
 /// generates the waveform according to user input, writes to .wav file
 Future<void> makeWAV() async {
-  waveMaker.outputWave = File(waveMaker.filePath)..create(recursive: true);
+  outputWave.outputWave = File(outputWave.filePath)..create(recursive: true);
 
-  var generator = WaveGenerator(44100, waveMaker.bitDepth);
+  var generator = WaveGenerator(44100, outputWave.bitDepth);
 
   // instantiate a Note with given params
-  Note note = Note(waveMaker.fNought.toDouble(), waveMaker.fEnd.toDouble(),
-      waveMaker.duration.toInt() * 1000, 1, waveMaker.isSweep, waveMaker.steps);
+  Note note = Note(outputWave.fNought.toDouble(), outputWave.fEnd.toDouble(),
+      outputWave.duration.toInt() * 1000, 1, outputWave.isSweep, outputWave.steps);
 
   List<int> bytes = [];
-  await waveMaker.outputWave.writeAsString(''); //  clears existing file
+  await outputWave.outputWave.writeAsString(''); //  clears existing file
   try {
     // stream of audio bytes
     await for (int byte in generator.generate(note)) {
       bytes.add(byte);
     }
     // writes byte stream to .wav
-    await waveMaker.outputWave.writeAsBytes(bytes, mode: FileMode.writeOnly);
+    await outputWave.outputWave.writeAsBytes(bytes, mode: FileMode.writeOnly);
     // connects to audio player
-    await waveMaker.player.setSource(DeviceFileSource(waveMaker.filePath));
+    await outputWave.player.setSource(DeviceFileSource(outputWave.filePath));
   } catch (err) {
     throw ('caught error while writing to .wav: $err');
   } finally {
     playAndRecord();
   }
+  spectrumInfo.fundamental = outputWave.fNought.toDouble();
+  print('from makewave ${spectrumInfo.fundamental}');
 }
 
 /// simultaneously initiates, ends the audio output stream and recording.
@@ -56,7 +58,7 @@ void playAndRecord() async {
   );
 
   try {
-    waveMaker.player.resume(); // begin streaming generated audio
+    outputWave.player.resume(); // begin streaming generated audio
     // print('Recording now'); // debugging marker
     spectrumIsLoaded.value = false;
     // band-aid solution > recording in float32 bitdepth to file
@@ -77,8 +79,8 @@ void playAndRecord() async {
     print(s);
   }
 
-  waveMaker.player.onPlayerComplete.listen((event) async {
-    waveMaker.player.release();
+  outputWave.player.onPlayerComplete.listen((event) async {
+    outputWave.player.release();
     // streamRecorder.stop().then((value) {
     //   print(value);
     // });

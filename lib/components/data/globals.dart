@@ -24,7 +24,7 @@ import 'package:audiotestproject/components/data/signal_processing.dart';
 
 /// global data structures, controllers
 // var spectrumController = PowerSpectrumController();
-var waveMaker = AudioOutController();
+var outputWave = AudioOutController();
 SpectrumInfo spectrumInfo = SpectrumInfo();
 
 
@@ -34,7 +34,7 @@ ValueNotifier<SpectrumData> currentView = ValueNotifier(SpectrumData(
 ValueNotifier<int> saveButtonNotifier = ValueNotifier(0); // not used?
 ValueNotifier<List<SpectrumData>>storedLogNotifier = ValueNotifier([]);
 List<SpectrumData> storedLog = storedLogNotifier.value;
-ValueNotifier<bool> spectrumIsLoaded = ValueNotifier(false);
+ValueNotifier<bool> spectrumIsLoaded = ValueNotifier(false); // prevents interactions that may cause errors ex. clicking play multiple times
 ChartProviderClass ChartProvider = ChartProviderClass();
 
 Notifier testNotifier = Notifier(); // not used
@@ -85,14 +85,27 @@ class AudioOutController {
 /// stores information about current spectrum view for analysis purposes
 class SpectrumInfo {
   double targetIndex = 500;
-  List<FlSpot> spots = const [FlSpot(0, 0)];
-  int size = 0;
+  double fundamental = 500;
+  // List<FlSpot> spots = const [FlSpot(0, 0)];
+  // int size = 0;
   double SNR = 0;
   double THD = 0;
   double SFDR = 0;
   double peak = 0;
 
   static final SpectrumInfo _singleton = SpectrumInfo._internal();
+
+  update(SpectrumData data) {
+    // this.targetIndex = other.targetIndex;
+    fundamental = data.fNought.toDouble();
+    targetIndex = fundamental * data.fourierResponse.length / 20000;
+    // spots = getDataPoints(data.fourierResponse);
+    // this.size = other.size;
+    SNR = calculateSNR(data.fourierResponse).$1;
+    THD = calculateTHD(data.fourierResponse).$1;
+    SFDR = calculateSFDR(data.fourierResponse).$1;
+    peak = indexOfPeak(data.fourierResponse).toDouble();
+  }
 
   factory SpectrumInfo() {
     return _singleton;
@@ -109,6 +122,7 @@ class ChartProviderClass extends ChangeNotifier {
   double highX = 20000;
   bool lineTouchOn = true;
   bool yAxisUnits = false;
+  bool harmonicMarkersOn = false;
 
   set minX(double lowX) {
     this.lowX = lowX;
@@ -122,7 +136,13 @@ class ChartProviderClass extends ChangeNotifier {
 
   switchLineTouch() {
     lineTouchOn = !lineTouchOn;
-    print('line touch notifier: $lineTouchOn');
+    // print('line touch notifier: $lineTouchOn');
+    notifyListeners();
+  }
+
+  showMarkers() {
+    harmonicMarkersOn = !harmonicMarkersOn;
+    // print(harmonicMarkersOn);
     notifyListeners();
   }
 
@@ -152,7 +172,7 @@ class SpectrumData {
 
 
   SpectrumData(this.fNought, this.fEnd, this.steps, this.isSweep, this.bitDepth,
-      this.duration, Float64List x) : _fourierResponse = x;
+      this.duration, Float64List x) : _fourierResponse = x, spots = getDataPoints(x);
   
   Float64List get fourierResponse {
     return _fourierResponse;
@@ -161,7 +181,7 @@ class SpectrumData {
   set fourierResponse(Float64List fourierResponse) {
     _fourierResponse = fourierResponse;
     print('fourier response called: getting datapoints');
-    spots = getDataPoints(_fourierResponse);
+    spots = getDataPoints(_fourierResponse); // dont need?
     // print('should be notifying!'); // debugging
     // notifyListeners();
   }

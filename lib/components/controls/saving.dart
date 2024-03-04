@@ -17,8 +17,8 @@ Future<void> appInitCheckFile() async {
   appCacheDir = await getApplicationCacheDirectory();
   appDocDir = await getApplicationDocumentsDirectory();
   storageFile = File('${appDocDir.path}/saved_spectrums.json');
-  if (waveMaker.filePath == '') {
-    waveMaker.filePath = '${appCacheDir.path}/wave_out.wav';
+  if (outputWave.filePath == '') {
+    outputWave.filePath = '${appCacheDir.path}/wave_out.wav';
   }
   if (!await storageFile.exists()) {
     // file does not exist
